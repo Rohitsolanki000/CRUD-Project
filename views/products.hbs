@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>{{title}}</h1>
+        <a href="/create-form" class="btn btn-primary mb-3">Add New Product</a>
+       <div class="row">
+    {{#each products}}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{this.image_url}}" class="card-img-top" alt="{{this.product_name}}">
+                <div class="card-body">
+                    <h5 class="card-title">{{this.product_name}}</h5>
+                    <p class="card-text">SKU: {{this.sku}}</p>
+                    <p class="card-text">Price: ₹{{this.price}}</p>
+                    <button class="btn btn-warning edit-btn" data-id="{{this.id}}" 
+                            data-name="{{this.product_name}}" data-sku="{{this.sku}}" 
+                            data-price="{{this.price}}" data-image="{{this.image_url}}">
+                        Edit
+                    </button>
+                    <a href="/delete/{{this.id}}" class="btn btn-danger">Delete</a>
+                </div>
+            </div>
+        </div>
+    {{/each}}
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editProductId" name="id" />
+                    <div class="mb-3">
+                        <label for="editProductName" class="form-label">Product Name</label>
+                        <input type="text" class="form-control" id="editProductName" name="product_name" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="editSku" class="form-label">SKU</label>
+                        <input type="text" class="form-control" id="editSku" name="sku" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPrice" class="form-label">Price</label>
+                        <input type="number" class="form-control" id="editPrice" name="price" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="editImage" class="form-label">Image</label>
+                        <input type="file" class="form-control" id="editImage" name="image" />
+                        <img id="editImagePreview" src="" alt="Current Image" class="img-thumbnail mt-2" style="max-width: 100px;" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Open modal with product data
+    $('.edit-btn').on('click', function () {
+        const id = $(this).data('id');
+        const name = $(this).data('name');
+        const sku = $(this).data('sku');
+        const price = $(this).data('price');
+        const image = $(this).data('image');
+
+        $('#editProductId').val(id);
+        $('#editProductName').val(name);
+        $('#editSku').val(sku);
+        $('#editPrice').val(price);
+        $('#editImagePreview').attr('src', image);
+
+        $('#editModal').modal('show');
+    });
+
+    // Handle form submission
+    $('#editForm').on('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: `/edit/${$('#editProductId').val()}`,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    $('#editModal').modal('hide'); // Close modal
+                    location.reload(); // Reload page to show updated data
+                } else {
+                    alert('Failed to update product');
+                }
+            },
+            error: function () {
+                alert('Error updating product');
+            }
+        });
+    });
+});
+
+</script>
+
+</body>
+</html>
